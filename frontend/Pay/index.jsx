@@ -1,4 +1,4 @@
-import { MiniKit, tokenToDecimals, Tokens } from "@worldcoin/minikit-js";
+// MiniKit is loaded from CDN in main.js
 
 const sendPayment = async () => {
   try {
