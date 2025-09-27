@@ -1,0 +1,151 @@
+# Blaze It - World Mini App Development Rules
+
+## Project Overview
+Building "Blaze It" - a World mini app for creating, buying, and selling tokens/memecoins with:
+- Swipe-based trading (right = buy, left = sell)
+- Quest-based investment system (Dream11-style for tokens)
+- Brutalist UI design (stark, spacious, functional)
+- Gas fees as transaction fees
+
+## Tech Stack (Maintain Current Template)
+- **Frontend**: Vite + Vanilla JS + MiniKit + Tailwind CSS
+- **Backend**: Express.js + TypeScript + Node.js
+- **Database**: Supabase (off-chain processing)
+- **Blockchain**: Worldchain Sepolia (via MiniKit)
+- **Deployment**: Vercel (frontend + backend)
+- **Proxy**: Nginx (development)
+- **Tunneling**: Ngrok (development)
+
+## Architecture Decisions
+- **Trading Mechanism**: Bonding curve per token (PumpFun-style)
+- **Relayer**: Use MiniKit + World App gas sponsorship (no extra relayer)
+- **App Shape**: Keep current Vite + Express split (World template standard)
+- **Quests**: Off-chain scoring in Supabase (MVP)
+- **Token Economics**: Creator mint 100% initial, 1% protocol fee on trades
+- **UI Theme**: Brutalist design, dark/mono palette
+
+## Development Standards
+
+### Frontend (Vite + MiniKit)
+- Use existing `frontend/` structure
+- Maintain `main.js` as entry point
+- Create components in separate folders (like `Verify/`, `Pay/`)
+- Use MiniKit commands: `verify()`, `pay()`, `transaction()`
+- Implement brutalist design with Tailwind CSS
+- Swipe gestures for buy/sell actions
+
+### Backend (Express + TypeScript)
+- Extend existing `backend/` structure
+- Add new endpoints in `src/` folder
+- Use existing patterns: `verifyHandler`, `initiatePaymentHandler`
+- Integrate Supabase for data persistence
+- Implement World ID verification with `verifyCloudProof`
+
+### Smart Contracts (Solidity)
+- Deploy on Worldchain Sepolia
+- TokenFactory for ERC20 creation
+- BondingCurve contract per token
+- Protocol fee collection to treasury
+- Anti-sniping mechanisms
+
+### Database Schema (Supabase)
+```sql
+-- Token registry
+tokens (id, name, symbol, contract_address, creator_id, created_at, total_supply, bonding_curve_params)
+
+-- Trading history
+trades (id, user_id, token_id, type, amount, price, tx_hash, created_at)
+
+-- Quests system
+quests (id, title, description, token_slate, start_date, end_date, prize_pool, status)
+quest_submissions (id, quest_id, user_id, portfolio, score, submitted_at)
+leaderboards (quest_id, user_id, rank, score, updated_at)
+
+-- User portfolios
+portfolios (user_id, token_id, balance, avg_buy_price, pnl)
+```
+
+## File Structure Extensions
+```
+frontend/
+├── Trading/
+│   ├── index.js          # Swipe trading component
+│   └── styles.css        # Brutalist trading UI
+├── Quests/
+│   ├── index.js          # Quest investment page
+│   └── leaderboard.js    # Leaderboard component
+├── TokenCreation/
+│   └── index.js          # Create new token
+└── Dashboard/
+    └── index.js          # User portfolio overview
+
+backend/src/
+├── token-creation.ts     # Create token endpoints
+├── trading.ts           # Buy/sell orchestration
+├── quests.ts            # Quest management
+├── portfolio.ts         # User portfolio tracking
+└── bonding-curve.ts     # Price calculation logic
+
+contracts/
+├── TokenFactory.sol     # ERC20 factory
+├── BondingCurve.sol     # Trading mechanism
+└── Treasury.sol         # Fee collection
+```
+
+## MiniKit Integration Patterns
+- Use `MiniKit.commandsAsync.verify()` for World ID
+- Use `MiniKit.commandsAsync.transaction()` for token trades
+- Use `MiniKit.commandsAsync.pay()` for payments
+- Handle all user interactions through MiniKit UI
+- Rely on World App gas sponsorship
+
+## Development Workflow
+1. Start with current template structure
+2. Add new components following existing patterns
+3. Extend backend with new endpoints
+4. Deploy contracts to Worldchain Sepolia
+5. Set up Supabase database
+6. Test with ngrok tunnel
+7. Deploy to Vercel
+
+## Code Standards
+- Follow existing TypeScript patterns
+- Use async/await for all async operations
+- Implement proper error handling
+- Add comprehensive logging
+- Use environment variables for all secrets
+- Follow World App guidelines and standards
+
+## Testing Strategy
+- Test MiniKit integration locally with ngrok
+- Test smart contracts on Sepolia testnet
+- Test Supabase integration
+- Test full user flows end-to-end
+- Validate World ID verification
+- Test gas fee handling
+
+## Deployment Checklist
+- [ ] Environment variables configured
+- [ ] Supabase database set up
+- [ ] Smart contracts deployed to Sepolia
+- [ ] MiniKit properly integrated
+- [ ] World ID verification working
+- [ ] Gas sponsorship functioning
+- [ ] Vercel deployment successful
+- [ ] World Developer Portal submission ready
+
+## Key Features to Implement
+1. **Token Creation**: Deploy ERC20s via factory contract
+2. **Swipe Trading**: Right = buy, left = sell with bonding curve
+3. **Quest System**: Token investment competitions
+4. **Portfolio Tracking**: Real-time PnL and holdings
+5. **Leaderboards**: Quest rankings and achievements
+6. **Brutalist UI**: Stark, functional design
+7. **Gas Optimization**: Leverage World App sponsorship
+
+## World App Compliance
+- Follow World App guidelines
+- Ensure proper World ID integration
+- Use approved MiniKit patterns
+- Test thoroughly before submission
+- Prepare for Developer Portal review
