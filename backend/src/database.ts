@@ -11,6 +11,7 @@ export interface Token {
   name: string;
   symbol: string;
   contract_address: string;
+  bonding_curve_address?: string;
   creator_id: string;
   created_at: string;
   total_supply: string;

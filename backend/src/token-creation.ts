@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { supabase, Token } from "./database";
 import { BondingCurveParams } from "./bonding-curve";
+import { createTokenOnChain } from "./blockchain";
 import crypto from "crypto";
 
 interface CreateTokenRequest {
@@ -23,10 +24,15 @@ interface CreateTokenResponse {
     data: string;
     value: string;
   };
+  blockchain_result?: {
+    token_address: string;
+    bonding_curve_address: string;
+    tx_hash: string;
+  };
   error?: string;
 }
 
-export const createTokenHandler: RequestHandler = async (req, res) => {
+export const createTokenHandler: RequestHandler = async (req, res)=> {
   try {
     const { name, symbol, total_supply, bonding_curve_params, creator_id }: CreateTokenRequest = req.body;
 
@@ -94,21 +100,70 @@ export const createTokenHandler: RequestHandler = async (req, res) => {
       });
     }
 
-    // Prepare transaction data for MiniKit
-    // This would typically call a TokenFactory contract
-    const transactionData = {
-      to: process.env.TOKEN_FACTORY_ADDRESS || "0x0000000000000000000000000000000000000000",
-      data: generateCreateTokenCalldata(name, symbol, total_supply, bonding_curve_params),
-      value: "0"
-    };
+    // Create token on blockchain
+    try {
+      const blockchainResult = await createTokenOnChain(
+        name,
+        symbol,
+        total_supply,
+        bonding_curve_params.base_price,
+        bonding_curve_params.slope
+      );
 
-    const response: CreateTokenResponse = {
-      success: true,
-      token,
-      transaction_data: transactionData
-    };
+      // Update token with real contract addresses
+      const { error: updateError } = await supabase
+        .from('tokens')
+        .update({
+          contract_address: blockchainResult.tokenAddress,
+          bonding_curve_address: blockchainResult.bondingCurveAddress
+        })
+        .eq('id', token.id);
 
-    res.json(response);
+      if (updateError) {
+        console.error('Failed to update token with contract addresses:', updateError);
+      }
+
+      // Prepare transaction data for MiniKit
+      const transactionData = {
+        to: process.env.TOKEN_FACTORY_ADDRESS || "0x0000000000000000000000000000000000000000",
+        data: generateCreateTokenCalldata(name, symbol, total_supply, bonding_curve_params),
+        value: "0",
+        gas: "500000" // Estimated gas limit
+      };
+
+      const response: CreateTokenResponse = {
+        success: true,
+        token: {
+          ...token,
+          contract_address: blockchainResult.tokenAddress,
+          bonding_curve_address: blockchainResult.bondingCurveAddress
+        },
+        transaction_data: transactionData,
+        blockchain_result: {
+          token_address: blockchainResult.tokenAddress,
+          bonding_curve_address: blockchainResult.bondingCurveAddress,
+          tx_hash: blockchainResult.txHash
+        }
+      };
+
+      res.json(response);
+    } catch (blockchainError) {
+      console.error('Blockchain creation failed:', blockchainError);
+      
+      // Still return the database token even if blockchain creation fails
+      const response: CreateTokenResponse = {
+        success: true,
+        token,
+        transaction_data: {
+          to: process.env.TOKEN_FACTORY_ADDRESS || "0x0000000000000000000000000000000000000000",
+          data: generateCreateTokenCalldata(name, symbol, total_supply, bonding_curve_params),
+          value: "0"
+        },
+        error: "Blockchain deployment pending - token created in database only"
+      };
+
+      res.json(response);
+    }
 
   } catch (error) {
     console.error('Create token error:', error);
@@ -142,7 +197,7 @@ function generateCreateTokenCalldata(
 }
 
 // Get token details
-export const getTokenHandler: RequestHandler = async (req, res) => {
+export const getTokenHandler: RequestHandler = async (req, res)=> {
   try {
     const { tokenId } = req.params;
 
@@ -174,7 +229,7 @@ export const getTokenHandler: RequestHandler = async (req, res) => {
 };
 
 // List all tokens
-export const listTokensHandler: RequestHandler = async (req, res) => {
+export const listTokensHandler: RequestHandler = async (req, res)=> {
   try {
     const { page = 1, limit = 20, search } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
@@ -220,7 +275,7 @@ export const listTokensHandler: RequestHandler = async (req, res) => {
 };
 
 // Update token contract address after deployment
-export const updateTokenContractHandler: RequestHandler = async (req, res) => {
+export const updateTokenContractHandler: RequestHandler = async (req, res)=> {
   try {
     const { tokenId } = req.params;
     const { contract_address, tx_hash } = req.body;

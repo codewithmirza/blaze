@@ -9,8 +9,8 @@ contract Treasury is Ownable {
     event ETHWithdrawn(address indexed to, uint256 amount);
     event TokenWithdrawn(address indexed token, address indexed to, uint256 amount);
 
-    constructor() {
-        _transferOwnership(msg.sender);
+    constructor() Ownable(msg.sender) {
+        // msg.sender is passed as initialOwner to Ownable
     }
 
     // Function to receive ETH

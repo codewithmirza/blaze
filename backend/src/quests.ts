@@ -131,7 +131,7 @@ export const createQuestHandler: RequestHandler = async (req, res) => {
 };
 
 // Get all active quests
-export const getQuestsHandler: RequestHandler = async (req, res) => {
+export const getQuestsHandler: RequestHandler = async (req, res)=> {
   try {
     const { status = 'active', page = 1, limit = 20 } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
@@ -196,7 +196,7 @@ export const getQuestsHandler: RequestHandler = async (req, res) => {
 };
 
 // Get quest details
-export const getQuestHandler: RequestHandler = async (req, res) => {
+export const getQuestHandler: RequestHandler = async (req, res)=> {
   try {
     const { questId } = req.params;
 
@@ -247,7 +247,7 @@ export const getQuestHandler: RequestHandler = async (req, res) => {
 };
 
 // Submit portfolio for quest
-export const submitPortfolioHandler: RequestHandler = async (req, res) => {
+export const submitPortfolioHandler: RequestHandler = async (req, res)=> {
   try {
     const { quest_id, user_id, portfolio }: SubmitPortfolioRequest = req.body;
 
@@ -357,7 +357,7 @@ export const submitPortfolioHandler: RequestHandler = async (req, res) => {
 };
 
 // Get quest leaderboard
-export const getQuestLeaderboardHandler: RequestHandler = async (req, res) => {
+export const getQuestLeaderboardHandler: RequestHandler = async (req, res)=> {
   try {
     const { questId } = req.params;
     const { limit = 10 } = req.query;
@@ -400,7 +400,7 @@ export const getQuestLeaderboardHandler: RequestHandler = async (req, res) => {
 };
 
 // Get user's quest submissions
-export const getUserSubmissionsHandler: RequestHandler = async (req, res) => {
+export const getUserSubmissionsHandler: RequestHandler = async (req, res)=> {
   try {
     const { userId } = req.params;
     const { page = 1, limit = 20 } = req.query;
@@ -507,7 +507,7 @@ async function calculatePortfolioScore(questId: string, portfolio: any): Promise
 }
 
 // Update quest status (admin function)
-export const updateQuestStatusHandler: RequestHandler = async (req, res) => {
+export const updateQuestStatusHandler: RequestHandler = async (req, res)=> {
   try {
     const { questId } = req.params;
     const { status } = req.body;

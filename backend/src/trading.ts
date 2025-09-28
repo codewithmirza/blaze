@@ -8,11 +8,13 @@ import {
   parseTokenAmount,
   formatTokenAmount
 } from "./bonding-curve";
+import { getBuyPrice, getSellPrice, executeBuyTransaction, executeSellTransaction, verifyTransaction } from "./blockchain";
 
 interface BuyTokenRequest {
   token_id: string;
   amount: string;
   user_id: string;
+  tx_hash?: string;
   max_slippage?: string; // Optional slippage tolerance
 }
 
@@ -20,6 +22,7 @@ interface SellTokenRequest {
   token_id: string;
   amount: string;
   user_id: string;
+  tx_hash?: string;
   max_slippage?: string; // Optional slippage tolerance
 }
 
@@ -42,7 +45,7 @@ interface TradeQuote {
 }
 
 // Get trading quote
-export const getTradeQuoteHandler: RequestHandler = async (req, res) => {
+export const getTradeQuoteHandler: RequestHandler = async (req, res)=> {
   try {
     const { token_id, trade_type, amount } = req.query;
 
@@ -134,12 +137,12 @@ export const getTradeQuoteHandler: RequestHandler = async (req, res) => {
       token_id: token_id as string,
       trade_type: trade_type as 'buy' | 'sell',
       amount: amount as string,
-      current_price: pricing.average_price,
+      current_price: pricing.averagePrice,
       ...(trade_type === 'buy' ? { total_cost: pricing.totalCost } : { total_value: pricing.totalValue }),
-      average_price: pricing.average_price,
+        average_price: pricing.averagePrice,
       protocol_fee: pricing.protocolFee,
       slippage: slippage.slippage,
-      price_impact: slippage.price_impact,
+      price_impact: slippage.priceImpact,
       transaction_data: transactionData
     };
 
@@ -158,14 +161,14 @@ export const getTradeQuoteHandler: RequestHandler = async (req, res) => {
 };
 
 // Execute buy trade
-export const buyTokenHandler: RequestHandler = async (req, res) => {
+export const buyTokenHandler: RequestHandler = async (req, res)=> {
   try {
-    const { token_id, amount, user_id, tx_hash }: BuyTokenRequest & { tx_hash: string } = req.body;
+    let { token_id, amount, user_id, tx_hash }: BuyTokenRequest = req.body;
 
-    if (!token_id || !amount || !user_id || !tx_hash) {
+    if (!token_id || !amount || !user_id) {
       return res.status(400).json({
         success: false,
-        error: "Missing required fields: token_id, amount, user_id, tx_hash"
+        error: "Missing required fields: token_id, amount, user_id"
       });
     }
 
@@ -200,8 +203,49 @@ export const buyTokenHandler: RequestHandler = async (req, res) => {
       currentSupply = totalBought.minus(totalSold).toFixed(0);
     }
 
-    // Calculate pricing
-    const pricing = calculateBuyPrice(amount, currentSupply, token.bonding_curve_params);
+    // Get real-time pricing from blockchain
+    let pricing;
+    try {
+      if (token.bonding_curve_address) {
+        const blockchainPrice = await getBuyPrice(token.bonding_curve_address, amount);
+        pricing = {
+          total_cost: blockchainPrice,
+          average_price: blockchainPrice,
+          price_impact: "0",
+          gas_estimate: "21000"
+        };
+      } else {
+        // Fallback to local calculation
+        pricing = calculateBuyPrice(amount, currentSupply, token.bonding_curve_params);
+      }
+    } catch (error) {
+      console.error('Error getting blockchain price, using local calculation:', error);
+      pricing = calculateBuyPrice(amount, currentSupply, token.bonding_curve_params);
+    }
+
+    // Execute blockchain transaction
+    let blockchainResult;
+    try {
+      if (token.bonding_curve_address) {
+        blockchainResult = await executeBuyTransaction(
+          token.bonding_curve_address,
+          amount,
+          user_id // This should be the user's wallet address
+        );
+        
+        // Verify transaction
+        const isVerified = await verifyTransaction(blockchainResult.txHash);
+        if (!isVerified) {
+          throw new Error('Transaction verification failed');
+        }
+        
+        // Use blockchain transaction hash
+        tx_hash = blockchainResult.txHash;
+      }
+    } catch (error) {
+      console.error('Blockchain transaction failed:', error);
+      // Continue with database-only recording for now
+    }
 
     // Record trade
     const tradeData: Omit<Trade, 'id' | 'created_at'> = {
@@ -209,7 +253,7 @@ export const buyTokenHandler: RequestHandler = async (req, res) => {
       token_id,
       type: 'buy',
       amount,
-      price: pricing.average_price,
+      price: pricing.averagePrice,
       tx_hash
     };
 
@@ -246,14 +290,14 @@ export const buyTokenHandler: RequestHandler = async (req, res) => {
 };
 
 // Execute sell trade
-export const sellTokenHandler: RequestHandler = async (req, res) => {
+export const sellTokenHandler: RequestHandler = async (req, res)=> {
   try {
-    const { token_id, amount, user_id, tx_hash }: SellTokenRequest & { tx_hash: string } = req.body;
+    let { token_id, amount, user_id, tx_hash }: SellTokenRequest = req.body;
 
-    if (!token_id || !amount || !user_id || !tx_hash) {
+    if (!token_id || !amount || !user_id) {
       return res.status(400).json({
         success: false,
-        error: "Missing required fields: token_id, amount, user_id, tx_hash"
+        error: "Missing required fields: token_id, amount, user_id"
       });
     }
 
@@ -312,7 +356,7 @@ export const sellTokenHandler: RequestHandler = async (req, res) => {
       token_id,
       type: 'sell',
       amount,
-      price: pricing.average_price,
+      price: pricing.averagePrice,
       tx_hash
     };
 

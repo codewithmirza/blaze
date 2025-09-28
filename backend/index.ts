@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from "express";
+import './src/blockchain'; // Initialize blockchain service
 
 import { verifyHandler } from "./src/verify";
 import { initiatePaymentHandler } from "./src/initiate-payment";
