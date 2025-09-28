@@ -16,7 +16,7 @@ module.exports = {
       chainId: 1337
     },
     "worldchain-sepolia": {
-      url: "https://sepolia-rpc.worldchain.org",
+      url: "https://worldchain-sepolia.g.alchemy.com/v2/demo",
       chainId: 4801,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       gasPrice: 1000000000, // 1 gwei

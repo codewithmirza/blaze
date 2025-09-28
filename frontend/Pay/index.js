@@ -81,25 +81,25 @@ const handlePay = async () => {
 
 export const PayBlock = () => {
   return `
-    <div class="space-y-8">
+    <div class="space-y-4">
       <!-- Header -->
       <div class="text-center">
-        <h2 class="text-3xl font-black mb-2">PAYMENT TEST</h2>
-        <p class="text-gray-400 text-lg">Test payment functionality</p>
+        <h2 class="text-xl font-black mb-2">PAYMENT TEST</h2>
+        <p class="text-orange-200 text-sm">Test payment functionality</p>
       </div>
 
-      <div class="max-w-md mx-auto">
+      <div class="max-w-sm mx-auto">
         <button 
           onclick="handlePay()"
-          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 text-xl border-4 border-blue-400"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 text-sm border-2 border-blue-400 rounded"
         >
           TEST PAY
         </button>
         
         ${paymentResponse ? `
-          <div class="mt-8 p-4 bg-gray-800 border-2 border-gray-600">
-            <h3 class="text-lg font-bold mb-2">Response:</h3>
-            <pre class="text-sm text-gray-300 overflow-auto">${JSON.stringify(paymentResponse, null, 2)}</pre>
+          <div class="mt-4 p-2 bg-orange-900 border-2 border-orange-500 rounded">
+            <h3 class="text-sm font-bold mb-1 text-orange-300">Response:</h3>
+            <pre class="text-xs text-orange-200 overflow-auto">${JSON.stringify(paymentResponse, null, 2)}</pre>
           </div>
         ` : ''}
       </div>

@@ -30,17 +30,17 @@ export const TestingBlock = () => {
   })();
 
   return `
-    <div class="space-y-8">
+    <div class="space-y-4">
       <!-- Header -->
       <div class="text-center">
-        <h2 class="text-3xl font-black mb-2">TEST BLAZE IT</h2>
-        <p class="text-gray-400 text-lg">Scan QR code to test in World App</p>
+        <h2 class="text-xl font-black mb-2">TEST BLAZE IT</h2>
+        <p class="text-orange-200 text-sm">Scan QR code to test in World App</p>
       </div>
 
-      <div class="max-w-4xl mx-auto">
+      <div class="max-w-sm mx-auto">
         <!-- App ID Input -->
-        <div class="mb-8">
-          <label class="block text-2xl font-bold mb-4">
+        <div class="mb-4">
+          <label class="block text-sm font-bold mb-2 text-orange-300">
             App ID
           </label>
           <input
@@ -48,26 +48,26 @@ export const TestingBlock = () => {
             placeholder="Enter App Id (eg. app_f88bb2a....)"
             value="${appId}"
             onchange="handleAppIdChange(this.value)"
-            class="w-full p-4 text-xl bg-gray-800 border-4 border-white text-white placeholder-gray-400"
+            class="w-full p-2 text-sm bg-orange-900 border-2 border-orange-400 text-white placeholder-orange-400 rounded"
             aria-label="App ID"
           />
         </div>
 
         ${trimmed && !isValid ? `
-          <div class="mb-8 p-4 bg-red-900 border-4 border-red-500">
-            <p class="text-xl text-red-200">
+          <div class="mb-4 p-2 bg-red-900 border-2 border-red-500 rounded">
+            <p class="text-sm text-red-200">
               Invalid App Id. Format: app_xxxxxxxxxxx
             </p>
           </div>
         ` : ''}
 
         <!-- QR Code -->
-        <div class="flex justify-center">
-          <div class="border-4 border-white p-4 bg-white">
+        <div class="flex justify-center mb-4">
+          <div class="border-2 border-orange-400 p-2 bg-white rounded">
             ${isValid && payload ? `
-              <img src="${qrSrc}" alt="QR for ${payload}" width="200" height="200" loading="eager" />
+              <img src="${qrSrc}" alt="QR for ${payload}" width="150" height="150" loading="eager" />
             ` : `
-              <div class="w-48 h-48 flex items-center justify-center text-gray-500">
+              <div class="w-36 h-36 flex items-center justify-center text-gray-500 text-xs">
                 ${!appId ? 'Enter a valid App ID' : 'Invalid App ID'}
               </div>
             `}
@@ -75,15 +75,15 @@ export const TestingBlock = () => {
         </div>
 
         <!-- Instructions -->
-        <div class="mt-8 space-y-4 text-center">
-          <div class="text-lg text-gray-300">
+        <div class="space-y-2 text-center">
+          <div class="text-sm text-orange-200">
             <strong>Encoded value:</strong>
-            <code class="ml-2 px-2 py-1 bg-gray-700 text-white rounded">
+            <code class="ml-1 px-1 py-0.5 bg-orange-800 text-orange-100 rounded text-xs">
               ${payload || "(empty)"}
             </code>
           </div>
           
-          <ol class="list-decimal list-inside space-y-2 text-left max-w-md mx-auto">
+          <ol class="list-decimal list-inside space-y-1 text-left text-xs text-orange-200">
             <li>Enter your App ID above</li>
             <li>Scan the QR with your phone's camera</li>
             <li>Confirm the prompt in World App</li>

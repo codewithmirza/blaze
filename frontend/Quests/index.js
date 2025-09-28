@@ -64,8 +64,8 @@ export const QuestsBlock = () => {
 
   if (isLoading) {
     return `
-      <div class="text-center py-16">
-        <div class="text-4xl font-black">LOADING QUESTS...</div>
+      <div class="text-center py-8">
+        <div class="text-xl font-black text-orange-300">LOADING QUESTS...</div>
       </div>
     `;
   }
@@ -73,27 +73,27 @@ export const QuestsBlock = () => {
   if (!selectedQuest) {
     // Quest Selection
     return `
-      <div class="space-y-8">
+      <div class="space-y-4">
         <!-- Header -->
         <div class="text-center">
-          <h2 class="text-3xl font-black mb-2">QUESTS</h2>
-          <p class="text-gray-400 text-lg">Token investment competitions</p>
+          <h2 class="text-xl font-black mb-2">QUESTS</h2>
+          <p class="text-orange-200 text-sm">Token investment competitions</p>
         </div>
 
-        <div class="grid gap-6">
+        <div class="space-y-3">
           ${quests.map(quest => `
             <div
               onclick="handleQuestSelect(${JSON.stringify(quest).replace(/"/g, '&quot;')})"
-              class="border-4 border-white p-6 cursor-pointer hover:bg-gray-900 transition-colors"
+              class="border-2 border-orange-400 p-3 cursor-pointer hover:bg-orange-900 transition-colors rounded"
             >
-              <div class="text-3xl font-bold mb-2">${quest.title}</div>
-              <div class="text-lg text-gray-400 mb-4">${quest.description || ''}</div>
-              <div class="flex justify-between items-center">
-                <div class="text-xl">
-                  Prize Pool: ${quest.prize_pool} WLD
+              <div class="text-lg font-bold mb-1">${quest.title}</div>
+              <div class="text-sm text-orange-200 mb-2">${quest.description || ''}</div>
+              <div class="flex justify-between items-center text-xs">
+                <div>
+                  Prize: ${quest.prize_pool} WLD
                 </div>
-                <div class="text-xl">
-                  Status: <span class="text-green-400">${quest.status}</span>
+                <div>
+                  <span class="text-green-400">${quest.status}</span>
                 </div>
               </div>
             </div>
@@ -104,40 +104,40 @@ export const QuestsBlock = () => {
   } else {
     // Portfolio Selection
     return `
-      <div class="space-y-8">
+      <div class="space-y-4">
         <!-- Header -->
         <div class="text-center">
-          <h2 class="text-3xl font-black mb-2">QUESTS</h2>
-          <p class="text-gray-400 text-lg">Token investment competitions</p>
+          <h2 class="text-xl font-black mb-2">QUESTS</h2>
+          <p class="text-orange-200 text-sm">Token investment competitions</p>
         </div>
 
-        <div class="space-y-6">
-          <div class="mb-8">
+        <div class="space-y-3">
+          <div class="mb-4">
             <button
               onclick="goBackToQuests()"
-              class="text-2xl text-gray-400 hover:text-white mb-4"
+              class="text-sm text-orange-300 hover:text-orange-100 mb-2"
             >
               ← Back to Quests
             </button>
-            <h2 class="text-4xl font-bold mb-4">${selectedQuest.title}</h2>
-            <p class="text-xl text-gray-400 mb-6">${selectedQuest.description || ''}</p>
+            <h2 class="text-lg font-bold mb-2">${selectedQuest.title}</h2>
+            <p class="text-sm text-orange-200 mb-3">${selectedQuest.description || ''}</p>
           </div>
 
-          <div class="space-y-6">
-            <h3 class="text-3xl font-bold">Select Your Token Portfolio</h3>
+          <div class="space-y-3">
+            <h3 class="text-lg font-bold text-orange-300">Select Your Token Portfolio</h3>
             
             <!-- Token Selection -->
-            <div class="grid gap-4">
+            <div class="space-y-2">
               ${selectedQuest.token_slate.map(tokenId => `
-                <div class="border-2 border-gray-600 p-4">
+                <div class="border-2 border-orange-500 p-2 rounded">
                   <div class="flex justify-between items-center">
-                    <div class="text-xl font-bold">Token ${tokenId}</div>
+                    <div class="text-sm font-bold">Token ${tokenId}</div>
                     <input
                       type="number"
                       min="0"
                       max="100"
-                      placeholder="Allocation %"
-                      class="bg-gray-800 text-white p-2 border border-gray-600 w-32"
+                      placeholder="%"
+                      class="bg-orange-900 text-white p-1 border border-orange-400 w-16 text-xs rounded"
                       onchange="handlePortfolioChange('${tokenId}', parseInt(this.value) || 0)"
                     />
                   </div>
@@ -147,7 +147,7 @@ export const QuestsBlock = () => {
 
             <button
               onclick="handleSubmitPortfolio()"
-              class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 text-xl border-4 border-green-400 w-full"
+              class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 text-sm border-2 border-green-400 w-full rounded"
             >
               SUBMIT PORTFOLIO
             </button>
