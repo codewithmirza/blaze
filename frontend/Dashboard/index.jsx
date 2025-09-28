@@ -36,18 +36,18 @@ const DashboardBlock = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-4xl font-bold">Loading portfolio...</div>
+      <div className="text-center py-16">
+        <div className="text-4xl font-black">LOADING PORTFOLIO...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="p-8 border-b border-gray-800">
-        <h1 className="text-6xl font-bold mb-4">DASHBOARD</h1>
-        <p className="text-2xl text-gray-400">Your token portfolio</p>
+      <div className="text-center">
+        <h2 className="text-3xl font-black mb-2">DASHBOARD</h2>
+        <p className="text-gray-400 text-lg">Your token portfolio</p>
       </div>
 
       <div className="p-8 space-y-8">

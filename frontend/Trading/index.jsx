@@ -11,7 +11,7 @@ const TradingBlock = () => {
   useEffect(() => {
     const loadTokens = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/tokens');
+        const response = await fetch('http://localhost:3001/api/tokens');
         const data = await response.json();
         if (data.success) {
           setTokens(data.tokens);
@@ -92,15 +92,15 @@ const TradingBlock = () => {
   const currentToken = tokens[currentTokenIndex];
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="p-8 border-b border-gray-800">
-        <h1 className="text-6xl font-bold mb-4">BLAZE IT</h1>
-        <p className="text-2xl text-gray-400">Swipe right to buy, left to sell</p>
+    <div className="space-y-8">
+      {/* Instructions */}
+      <div className="text-center">
+        <h2 className="text-3xl font-black mb-2">TRADE TOKENS</h2>
+        <p className="text-gray-400 text-lg">Swipe right to buy, left to sell</p>
       </div>
 
       {/* Token Card */}
-      <div className="flex-1 flex items-center justify-center p-8">
+      <div className="flex justify-center">
         <div 
           className={`w-96 h-96 border-4 border-white p-8 transition-all duration-300 ${
             swipeDirection === 'right' ? 'bg-green-900 border-green-500' :
@@ -129,7 +129,7 @@ const TradingBlock = () => {
       </div>
 
       {/* Swipe Buttons */}
-      <div className="p-8 flex justify-center space-x-8">
+      <div className="flex justify-center space-x-8">
         <button
           onClick={() => handleSwipe('left')}
           className="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-8 text-xl border-4 border-red-400"
@@ -145,7 +145,7 @@ const TradingBlock = () => {
       </div>
 
       {/* Token Counter */}
-      <div className="p-4 text-center text-gray-400">
+      <div className="text-center text-gray-400">
         {currentTokenIndex + 1} of {tokens.length}
       </div>
     </div>

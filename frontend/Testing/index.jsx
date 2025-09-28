@@ -20,11 +20,11 @@ const QRCodeGenerator = () => {
   }, [payload]);
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-6xl font-bold mb-4">TEST BLAZE IT</h1>
-        <p className="text-2xl text-gray-400">Scan QR code to test in World App</p>
+      <div className="text-center">
+        <h2 className="text-3xl font-black mb-2">TEST BLAZE IT</h2>
+        <p className="text-gray-400 text-lg">Scan QR code to test in World App</p>
       </div>
 
       <div className="max-w-4xl mx-auto">

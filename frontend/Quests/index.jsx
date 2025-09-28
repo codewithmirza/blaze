@@ -11,7 +11,7 @@ const QuestsBlock = () => {
   useEffect(() => {
     const loadQuests = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/quests');
+        const response = await fetch('http://localhost:3001/api/quests');
         const data = await response.json();
         if (data.success) {
           setQuests(data.quests);
@@ -40,7 +40,7 @@ const QuestsBlock = () => {
     if (!selectedQuest) return;
     
     try {
-      const response = await fetch(`http://localhost:3000/api/quests/${selectedQuest.id}/submit`, {
+      const response = await fetch(`http://localhost:3001/api/quests/${selectedQuest.id}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -60,47 +60,45 @@ const QuestsBlock = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-4xl font-bold">Loading quests...</div>
+      <div className="text-center py-16">
+        <div className="text-4xl font-black">LOADING QUESTS...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="p-8 border-b border-gray-800">
-        <h1 className="text-6xl font-bold mb-4">QUESTS</h1>
-        <p className="text-2xl text-gray-400">Token investment competitions</p>
+      <div className="text-center">
+        <h2 className="text-3xl font-black mb-2">QUESTS</h2>
+        <p className="text-gray-400 text-lg">Token investment competitions</p>
       </div>
 
       {!selectedQuest ? (
         /* Quest Selection */
-        <div className="p-8">
-          <div className="grid gap-6">
-            {quests.map((quest) => (
-              <div
-                key={quest.id}
-                onClick={() => handleQuestSelect(quest)}
-                className="border-4 border-white p-6 cursor-pointer hover:bg-gray-900 transition-colors"
-              >
-                <div className="text-3xl font-bold mb-2">{quest.title}</div>
-                <div className="text-lg text-gray-400 mb-4">{quest.description}</div>
-                <div className="flex justify-between items-center">
-                  <div className="text-xl">
-                    Prize Pool: {quest.prize_pool} WLD
-                  </div>
-                  <div className="text-xl">
-                    Status: <span className="text-green-400">{quest.status}</span>
-                  </div>
+        <div className="grid gap-6">
+          {quests.map((quest) => (
+            <div
+              key={quest.id}
+              onClick={() => handleQuestSelect(quest)}
+              className="border-4 border-white p-6 cursor-pointer hover:bg-gray-900 transition-colors"
+            >
+              <div className="text-3xl font-bold mb-2">{quest.title}</div>
+              <div className="text-lg text-gray-400 mb-4">{quest.description}</div>
+              <div className="flex justify-between items-center">
+                <div className="text-xl">
+                  Prize Pool: {quest.prize_pool} WLD
+                </div>
+                <div className="text-xl">
+                  Status: <span className="text-green-400">{quest.status}</span>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       ) : (
         /* Portfolio Selection */
-        <div className="p-8">
+        <div className="space-y-6">
           <div className="mb-8">
             <button
               onClick={() => setSelectedQuest(null)}
