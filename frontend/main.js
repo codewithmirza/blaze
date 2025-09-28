@@ -1,5 +1,6 @@
 import "./index.css";
 import { MiniKit } from "https://cdn.jsdelivr.net/npm/@worldcoin/minikit-js@1.1.1/+esm";
+import { CONFIG } from "./config.js";
 import { VerifyBlock } from "./Verify/index.js";
 import { PayBlock } from "./Pay/index.js";
 import { TradingBlock } from "./Trading/index.js";
@@ -10,6 +11,9 @@ import { TestingBlock } from "./Testing/index.js";
 
 // Install MiniKit
 MiniKit.install();
+
+// Make CONFIG globally available
+window.CONFIG = CONFIG;
 
 // Blaze It App - Vanilla JS implementation
 class BlazeItApp {

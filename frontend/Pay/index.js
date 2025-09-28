@@ -3,7 +3,7 @@ let paymentResponse = null;
 
 const sendPayment = async () => {
   try {
-    const res = await fetch('http://localhost:3000/initiate-payment', {
+    const res = await fetch('https://blaze-backend-2xzvgrhww-codewithmirzas-projects.vercel.app/initiate-payment', {
       method: "POST",
     });
 
@@ -54,7 +54,7 @@ const handlePay = async () => {
     }
 
     if (response.status == "success") {
-      const res = await fetch('http://localhost:3000/confirm-payment', {
+      const res = await fetch('https://blaze-backend-2xzvgrhww-codewithmirzas-projects.vercel.app/confirm-payment', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ payload: response }),

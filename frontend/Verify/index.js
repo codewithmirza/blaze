@@ -24,7 +24,7 @@ const handleVerify = async () => {
     }
 
     // Verify the proof in the backend
-    const verifyResponse = await fetch('http://localhost:3000/verify', {
+    const verifyResponse = await fetch(`${window.CONFIG?.API_BASE_URL || 'https://blaze-backend-2xzvgrhww-codewithmirzas-projects.vercel.app'}/verify`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

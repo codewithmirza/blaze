@@ -9,14 +9,14 @@ const loadPortfolio = async () => {
     const userId = 'user123'; // TODO: Get from World ID
     
     // Load portfolio
-    const portfolioResponse = await fetch(`http://localhost:3000/api/portfolio/${userId}`);
+    const portfolioResponse = await fetch(`https://blaze-backend-2xzvgrhww-codewithmirzas-projects.vercel.app/api/portfolio/${userId}`);
     const portfolioData = await portfolioResponse.json();
     if (portfolioData.success) {
       portfolio = portfolioData.portfolio;
     }
 
     // Load trade history
-    const historyResponse = await fetch(`http://localhost:3000/api/portfolio/${userId}/trades`);
+    const historyResponse = await fetch(`https://blaze-backend-2xzvgrhww-codewithmirzas-projects.vercel.app/api/portfolio/${userId}/trades`);
     const historyData = await historyResponse.json();
     if (historyData.success) {
       tradeHistory = historyData.trades;

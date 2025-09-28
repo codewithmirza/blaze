@@ -7,7 +7,7 @@ let isLoading = true;
 // Load quests from backend
 const loadQuests = async () => {
   try {
-    const response = await fetch('http://localhost:3000/api/quests');
+    const response = await fetch('https://blaze-backend-2xzvgrhww-codewithmirzas-projects.vercel.app/api/quests');
     const data = await response.json();
     if (data.success) {
       quests = data.quests;
@@ -33,7 +33,7 @@ const handleSubmitPortfolio = async () => {
   if (!selectedQuest) return;
   
   try {
-    const response = await fetch(`http://localhost:3000/api/quests/${selectedQuest.id}/submit`, {
+    const response = await fetch(`https://blaze-backend-2xzvgrhww-codewithmirzas-projects.vercel.app/api/quests/${selectedQuest.id}/submit`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

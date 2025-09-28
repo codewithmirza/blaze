@@ -7,7 +7,7 @@ let isLoading = true;
 // Load tokens from backend
 const loadTokens = async () => {
   try {
-    const response = await fetch('http://localhost:3000/api/tokens');
+    const response = await fetch('https://blaze-backend-2xzvgrhww-codewithmirzas-projects.vercel.app/api/tokens');
     const data = await response.json();
     if (data.success) {
       tokens = data.tokens;
@@ -42,7 +42,7 @@ const handleBuyToken = async () => {
   
   try {
     const token = tokens[currentTokenIndex];
-    const response = await fetch('http://localhost:3000/api/trading/quote', {
+    const response = await fetch('https://blaze-backend-2xzvgrhww-codewithmirzas-projects.vercel.app/api/trading/quote', {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });

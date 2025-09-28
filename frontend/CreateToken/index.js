@@ -22,7 +22,7 @@ const handleCreateToken = async () => {
   document.getElementById('content').innerHTML = CreateTokenBlock();
   
   try {
-    const response = await fetch('http://localhost:3000/api/tokens', {
+    const response = await fetch('https://blaze-backend-2xzvgrhww-codewithmirzas-projects.vercel.app/api/tokens', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
