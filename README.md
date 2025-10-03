@@ -4,10 +4,10 @@ Brutalist, swipe-based trading for creating, buying, and selling memecoins on Wo
 
 ## Tech Stack
 - Frontend: Vite, Vanilla JS, Tailwind CSS, MiniKit (`MiniKit.commandsAsync.verify/transaction/pay`)
-- Backend: Express.js, TypeScript
+- Backend: Express.js, TypeScript (local) + Cloudflare Workers (edge)
 - Database: Supabase
 - Blockchain: Worldchain Sepolia (via MiniKit, gas sponsored by World App)
-- Deployment: Vercel (frontend + backend)
+- Deployment: Cloudflare Pages (frontend) + Cloudflare Workers (backend)
 - Dev Proxy/Tunnel: Nginx + Ngrok
 
 ## Features
@@ -31,7 +31,7 @@ nginx.conf          # Dev reverse proxy (ports: 5173 -> frontend, 3000 -> backen
 cd frontend && pnpm i && cd - && cd backend && pnpm i && cd -
 ```
 
-2) Start apps
+2) Start apps (local)
 ```bash
 # frontend (Vite)
 cd frontend && pnpm dev
@@ -67,7 +67,7 @@ VITE_CHAIN_ID=480
 VITE_RPC_URL=https://worldchain-sepolia.g.alchemy.com/v2/yourKey
 ```
 
-Backend (`backend/.env`)
+Backend (`backend/.env` for local Express; for Workers use `wrangler.toml` vars or secrets)
 ```
 APP_ID=app_your_app_id
 DEV_PORTAL_API_KEY=your_dev_portal_api_key
@@ -99,7 +99,24 @@ Backend base URL proxied at `/api` via Nginx. Selected routes:
 1. Keep Vite + Express split; iterate components and handlers in parallel
 2. Use Supabase for off-chain state (tokens, trades, portfolios, quests)
 3. Use MiniKit verify/transaction/pay for all user actions
-4. Test via Nginx + Ngrok; deploy to Vercel
+4. Test via Nginx + Ngrok; deploy to Cloudflare (Pages + Workers)
+
+## Cloudflare Deployment
+
+Frontend (Pages)
+```bash
+cd frontend
+pnpm build
+wrangler pages deploy dist --project-name blaze-it-frontend
+```
+
+Backend (Workers)
+```bash
+cd backend
+# set vars/secrets in wrangler or dashboard
+wrangler dev          # local dev
+wrangler deploy       # deploy worker
+```
 
 ## Next Up (Roadmap)
 - Implement MiniKit-powered buy/sell execution in `frontend/Trading/index.js`

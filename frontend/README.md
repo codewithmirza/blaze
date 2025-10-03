@@ -17,6 +17,7 @@ Brutalist UI mini app with swipe-based trading, quests, and portfolio tracking. 
 pnpm dev     # start Vite
 pnpm build   # build for production
 pnpm preview # preview build
+pnpm cf:deploy # deploy to Cloudflare Pages (requires wrangler)
 ```
 
 ## MiniKit
@@ -45,3 +46,4 @@ VITE_RPC_URL=https://worldchain-sepolia.g.alchemy.com/v2/yourKey
 ## Dev Notes
 - The proxy in `nginx.conf` serves frontend at `/` and backend at `/api` for a single Ngrok tunnel.
 - `Trading/index.js` currently loads tokens and stubs buy/sell execution; wire with MiniKit `transaction()` next.
+ - Cloud: Deploy frontend on Cloudflare Pages; backend on Cloudflare Workers.

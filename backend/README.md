@@ -160,10 +160,10 @@ pnpm run dev
 
 ## Deployment
 
-### Vercel
-1. Connect GitHub repository
-2. Set environment variables
-3. Deploy automatically
+### Cloudflare Workers
+1. Install wrangler: `npm i -g wrangler`
+2. Configure `wrangler.toml` and set vars/secrets
+3. `wrangler dev` (local) then `wrangler deploy`
 
 ### Environment Variables
 - `APP_ID` - World App ID
