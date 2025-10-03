@@ -110,12 +110,14 @@ pnpm build
 wrangler pages deploy dist --project-name blaze-it-frontend
 ```
 
-Backend (Workers)
+Backend (Workers serving frontend assets)
 ```bash
 cd backend
 # set vars/secrets in wrangler or dashboard
-wrangler dev          # local dev
-wrangler deploy       # deploy worker
+# build frontend first
+pnpm --filter frontend build
+wrangler dev          # local dev (serves assets from frontend/dist)
+wrangler deploy       # deploy worker (serves assets + API)
 ```
 
 ## Next Up (Roadmap)

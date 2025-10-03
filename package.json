@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "workspaces": [],
   "scripts": {
-    "build": "echo 'Vercel build disabled. Use Cloudflare Pages/Workers.' && exit 0"
+    "build": "echo 'Vercel build disabled. Use Cloudflare Pages/Workers.' && exit 0",
+    "deploy:worker": "pnpm --filter frontend build && cd backend && wrangler deploy"
   }
 }
