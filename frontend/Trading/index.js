@@ -1,24 +1,8 @@
 // Trading Component - Swipe-based token trading
-import { getApiUrl } from "../config.js";
-let tokens = [];
+import blazeState from "../src/state.js";
+
 let currentTokenIndex = 0;
 let swipeDirection = null;
-let isLoading = true;
-
-// Load tokens from backend
-const loadTokens = async () => {
-  try {
-    const response = await fetch(getApiUrl('/api/tokens'));
-    const data = await response.json();
-    if (data.success) {
-      tokens = data.tokens;
-    }
-  } catch (error) {
-    console.error('Error loading tokens:', error);
-  } finally {
-    isLoading = false;
-  }
-};
 
 const handleSwipe = (direction) => {
   swipeDirection = direction;
@@ -31,6 +15,7 @@ const handleSwipe = (direction) => {
   
   // Move to next token after a delay
   setTimeout(() => {
+    const tokens = blazeState.get('trading.tokens');
     currentTokenIndex = (currentTokenIndex + 1) % tokens.length;
     swipeDirection = null;
     // Re-render the content
@@ -39,39 +24,56 @@ const handleSwipe = (direction) => {
 };
 
 const handleBuyToken = async () => {
-  if (!tokens[currentTokenIndex]) return;
+  const tokens = blazeState.get('trading.tokens');
+  const token = tokens[currentTokenIndex];
+  if (!token) return;
   
-  try {
-    const token = tokens[currentTokenIndex];
-    const response = await fetch(getApiUrl('/api/trading/quote'), {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    
-    // TODO: Implement actual buy logic with MiniKit
-    console.log('Buying token:', token.symbol);
-  } catch (error) {
-    console.error('Error buying token:', error);
+  // Check if user is verified
+  if (!blazeState.get('user.isVerified')) {
+    blazeState.addNotification('Please verify your identity first', 'error');
+    return;
+  }
+  
+  // For demo, use a fixed amount
+  const amount = '1000000000000000000'; // 1 token in wei
+  
+  const success = await blazeState.buyToken(token.id, amount);
+  if (success) {
+    // Refresh portfolio after successful trade
+    await blazeState.loadPortfolio();
   }
 };
 
 const handleSellToken = async () => {
-  if (!tokens[currentTokenIndex]) return;
+  const tokens = blazeState.get('trading.tokens');
+  const token = tokens[currentTokenIndex];
+  if (!token) return;
   
-  try {
-    const token = tokens[currentTokenIndex];
-    // TODO: Implement actual sell logic with MiniKit
-    console.log('Selling token:', token.symbol);
-  } catch (error) {
-    console.error('Error selling token:', error);
+  // Check if user is verified
+  if (!blazeState.get('user.isVerified')) {
+    blazeState.addNotification('Please verify your identity first', 'error');
+    return;
+  }
+  
+  // For demo, use a fixed amount
+  const amount = '1000000000000000000'; // 1 token in wei
+  
+  const success = await blazeState.sellToken(token.id, amount);
+  if (success) {
+    // Refresh portfolio after successful trade
+    await blazeState.loadPortfolio();
   }
 };
 
+const handleVerifyUser = async () => {
+  await blazeState.verifyUser();
+};
+
 export const TradingBlock = () => {
-  // Load tokens on first render
-  if (isLoading) {
-    loadTokens();
-  }
+  const tokens = blazeState.get('trading.tokens');
+  const isLoading = blazeState.get('trading.isLoading');
+  const error = blazeState.get('trading.error');
+  const isVerified = blazeState.get('user.isVerified');
 
   if (isLoading) {
     return `
@@ -81,10 +83,23 @@ export const TradingBlock = () => {
     `;
   }
 
+  if (error) {
+    return `
+      <div class="text-center py-16">
+        <div class="text-2xl font-black text-red-400 mb-4">ERROR</div>
+        <div class="text-orange-200">${error}</div>
+        <button onclick="blazeState.loadTokens()" class="mt-4 bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 text-sm border-2 border-orange-400 rounded">
+          RETRY
+        </button>
+      </div>
+    `;
+  }
+
   if (tokens.length === 0) {
     return `
       <div class="text-center py-16">
         <div class="text-4xl font-black">NO TOKENS AVAILABLE</div>
+        <div class="text-orange-200 mt-4">Create your first token to get started!</div>
       </div>
     `;
   }
@@ -97,6 +112,16 @@ export const TradingBlock = () => {
       <div class="text-center">
         <h2 class="text-xl font-black mb-2">TRADE TOKENS</h2>
         <p class="text-orange-200 text-sm">Swipe right to buy, left to sell</p>
+        ${!isVerified ? `
+          <div class="mt-2">
+            <button
+              onclick="handleVerifyUser()"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 text-xs border-2 border-blue-400 rounded"
+            >
+              VERIFY IDENTITY
+            </button>
+          </div>
+        ` : ''}
       </div>
 
       <!-- Token Card -->
@@ -111,6 +136,12 @@ export const TradingBlock = () => {
             <div class="text-lg mb-2">${currentToken.name}</div>
             <div class="text-sm text-orange-200 mb-4">
               Supply: ${parseInt(currentToken.total_supply).toLocaleString()}
+            </div>
+            
+            <!-- Bonding Curve Info -->
+            <div class="text-xs text-orange-300 mb-4">
+              <div>Base Price: ${currentToken.bonding_curve_params?.base_price || '0'}</div>
+              <div>Slope: ${currentToken.bonding_curve_params?.slope || '0'}</div>
             </div>
             
             <!-- Swipe Instructions -->
@@ -131,12 +162,14 @@ export const TradingBlock = () => {
         <button
           onclick="handleSwipe('left')"
           class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 text-sm border-2 border-red-400 rounded"
+          ${!isVerified ? 'disabled' : ''}
         >
           SELL
         </button>
         <button
           onclick="handleSwipe('right')"
           class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 text-sm border-2 border-green-400 rounded"
+          ${!isVerified ? 'disabled' : ''}
         >
           BUY
         </button>

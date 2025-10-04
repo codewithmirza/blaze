@@ -1,6 +1,8 @@
 import "./index.css";
 import { MiniKit } from "https://cdn.jsdelivr.net/npm/@worldcoin/minikit-js@1.1.1/+esm";
 import { CONFIG } from "./config.js";
+import { getApiUrl } from "./config.js";
+import blazeState from "./src/state.js";
 import { VerifyBlock } from "./Verify/index.js";
 import { PayBlock } from "./Pay/index.js";
 import { TradingBlock } from "./Trading/index.js";
@@ -12,19 +14,21 @@ import { TestingBlock } from "./Testing/index.js";
 // Install MiniKit
 MiniKit.install();
 
-// Make CONFIG globally available
+// Make CONFIG and getApiUrl globally available
 window.CONFIG = CONFIG;
+window.getApiUrl = getApiUrl;
 
 // Blaze It App - Vanilla JS implementation
 class BlazeItApp {
   constructor() {
-    this.currentView = 'trading';
     this.init();
   }
 
   init() {
     this.render();
     this.bindEvents();
+    this.setupStateListeners();
+    this.initializeApp();
     console.log('Blaze It app loaded!');
     console.log('MiniKit installed:', MiniKit.isInstalled());
   }
@@ -38,6 +42,9 @@ class BlazeItApp {
         <div class="container mx-auto px-2 py-4">
           <h1 class="text-2xl font-black text-center mb-2">BLAZE IT</h1>
           <p class="text-center text-orange-200 text-sm">Token Trading Platform</p>
+          <div id="user-status" class="text-center text-xs mt-1">
+            <span id="verification-status" class="text-red-400">Not Verified</span>
+          </div>
         </div>
       </header>
 
@@ -64,6 +71,9 @@ class BlazeItApp {
         </div>
       </nav>
 
+      <!-- Notifications -->
+      <div id="notifications" class="fixed top-20 right-4 z-50 space-y-2"></div>
+
       <!-- Main Content -->
       <main class="container mx-auto px-2 py-4 max-w-sm">
         <div id="content"></div>
@@ -76,8 +86,9 @@ class BlazeItApp {
 
   renderContent() {
     const content = document.getElementById('content');
+    const currentView = blazeState.get('ui.currentView');
     
-    switch(this.currentView) {
+    switch(currentView) {
       case 'trading':
         content.innerHTML = TradingBlock();
         break;
@@ -107,18 +118,64 @@ class BlazeItApp {
     document.getElementById('nav-testing').addEventListener('click', () => this.setView('testing'));
   }
 
+  setupStateListeners() {
+    // Listen for view changes
+    blazeState.subscribe('ui.currentView', () => {
+      this.renderContent();
+      this.updateNavigation();
+    });
+
+    // Listen for user verification status
+    blazeState.subscribe('user.isVerified', (isVerified) => {
+      const statusEl = document.getElementById('verification-status');
+      if (statusEl) {
+        statusEl.textContent = isVerified ? 'Verified' : 'Not Verified';
+        statusEl.className = isVerified ? 'text-green-400' : 'text-red-400';
+      }
+    });
+
+    // Listen for notifications
+    blazeState.subscribe('ui.notifications', (notifications) => {
+      this.renderNotifications(notifications);
+    });
+  }
+
+  initializeApp() {
+    // Load initial data
+    blazeState.loadTokens();
+    blazeState.loadQuests();
+  }
+
   setView(view) {
-    this.currentView = view;
+    blazeState.setView(view);
+  }
+
+  updateNavigation() {
+    const currentView = blazeState.get('ui.currentView');
     
     // Update navigation buttons
     document.querySelectorAll('[id^="nav-"]').forEach(btn => {
       btn.className = 'px-3 py-2 text-sm font-bold border-2 border-orange-500 bg-orange-700 text-white hover:border-orange-300 hover:bg-orange-600 rounded';
     });
     
-    const activeBtn = document.getElementById(`nav-${view}`);
-    activeBtn.className = 'px-3 py-2 text-sm font-bold border-2 border-orange-300 bg-orange-300 text-black rounded';
-    
-    this.renderContent();
+    const activeBtn = document.getElementById(`nav-${currentView}`);
+    if (activeBtn) {
+      activeBtn.className = 'px-3 py-2 text-sm font-bold border-2 border-orange-300 bg-orange-300 text-black rounded';
+    }
+  }
+
+  renderNotifications(notifications) {
+    const container = document.getElementById('notifications');
+    if (!container) return;
+
+    container.innerHTML = notifications.map(notification => `
+      <div class="bg-${notification.type === 'success' ? 'green' : notification.type === 'error' ? 'red' : 'blue'}-900 border-2 border-${notification.type === 'success' ? 'green' : notification.type === 'error' ? 'red' : 'blue'}-400 p-2 rounded text-xs max-w-xs">
+        <div class="flex justify-between items-center">
+          <span>${notification.message}</span>
+          <button onclick="blazeState.removeNotification(${notification.id})" class="ml-2 text-white hover:text-gray-300">×</button>
+        </div>
+      </div>
+    `).join('');
   }
 }
 
