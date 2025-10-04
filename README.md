@@ -1,13 +1,13 @@
 # Blaze It — World Mini App
 
-Brutalist, swipe-based trading for creating, buying, and selling memecoins on Worldchain Sepolia. Built with Vite + Vanilla JS + MiniKit on the frontend and Express.js + TypeScript on the backend, with Supabase for off-chain data.
+Brutalist, swipe-based trading for creating, buying, and selling memecoins on Worldchain Sepolia. Built with Vite + Vanilla JS + MiniKit on the frontend and Express.js + TypeScript on the backend, with Cloudflare D1 for off-chain data.
 
 ## Tech Stack
 - Frontend: Vite, Vanilla JS, Tailwind CSS, MiniKit (`MiniKit.commandsAsync.verify/transaction/pay`)
 - Backend: Express.js, TypeScript (local) + Cloudflare Workers (edge)
-- Database: Supabase
+- Database: Cloudflare D1 (SQLite)
 - Blockchain: Worldchain Sepolia (via MiniKit, gas sponsored by World App)
-- Deployment: Cloudflare Pages (frontend) + Cloudflare Workers (backend)
+- Deployment: Cloudflare Workers (serves frontend + API)
 - Dev Proxy/Tunnel: Nginx + Ngrok
 
 ## Features
@@ -71,8 +71,6 @@ Backend (`backend/.env` for local Express; for Workers use `wrangler.toml` vars 
 ```
 APP_ID=app_your_app_id
 DEV_PORTAL_API_KEY=your_dev_portal_api_key
-SUPABASE_URL=...
-SUPABASE_ANON_KEY=...
 TOKEN_FACTORY_ADDRESS=0x...
 TREASURY_ADDRESS=0x...
 ```
@@ -97,27 +95,39 @@ Backend base URL proxied at `/api` via Nginx. Selected routes:
 
 ## Development Workflow
 1. Keep Vite + Express split; iterate components and handlers in parallel
-2. Use Supabase for off-chain state (tokens, trades, portfolios, quests)
+2. Use Cloudflare D1 for off-chain state (tokens, trades, portfolios, quests)
 3. Use MiniKit verify/transaction/pay for all user actions
-4. Test via Nginx + Ngrok; deploy to Cloudflare (Pages + Workers)
+4. Test via Nginx + Ngrok; deploy to Cloudflare Workers
 
 ## Cloudflare Deployment
 
-Frontend (Pages)
+1. Create D1 Database:
 ```bash
-cd frontend
-pnpm build
-wrangler pages deploy dist --project-name blaze-it-frontend
+wrangler d1 create blaze-it-db
+# Copy the database_id from output to backend/wrangler.toml
 ```
 
-Backend (Workers serving frontend assets)
+2. Initialize Database Schema:
 ```bash
 cd backend
-# set vars/secrets in wrangler or dashboard
-# build frontend first
+wrangler d1 execute blaze-it-db --file=./schema.sql
+```
+
+3. Deploy Worker (serves frontend + API):
+```bash
+# From repo root
+pnpm deploy:worker
+# Or manually:
 pnpm --filter frontend build
-wrangler dev          # local dev (serves assets from frontend/dist)
-wrangler deploy       # deploy worker (serves assets + API)
+cd backend && wrangler deploy
+```
+
+4. Set Environment Variables:
+```bash
+cd backend
+wrangler secret put APP_ID
+wrangler secret put DEV_PORTAL_API_KEY
+# Set other vars in wrangler.toml or dashboard
 ```
 
 ## Next Up (Roadmap)
