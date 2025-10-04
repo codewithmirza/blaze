@@ -1,4 +1,6 @@
 // CreateToken Component - Create new tokens
+import blazeState from "../src/state.js";
+
 let isCreating = false;
 let createResponse = null;
 
@@ -17,38 +19,36 @@ const handleCreateToken = async () => {
     return;
   }
   
+  // Check if user is verified
+  if (!blazeState.get('user.isVerified')) {
+    createResponse = { error: "Please verify your identity first" };
+    document.getElementById('content').innerHTML = CreateTokenBlock();
+    return;
+  }
+  
   isCreating = true;
   createResponse = { loading: true };
   document.getElementById('content').innerHTML = CreateTokenBlock();
   
   try {
-    const response = await fetch('https://blaze-backend-2xzvgrhww-codewithmirzas-projects.vercel.app/api/tokens', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name,
-        symbol: symbol.toUpperCase(),
-        total_supply: totalSupply,
-        bonding_curve_params: {
-          base_price: basePrice,
-          slope: slope,
-          protocol_fee_rate: "0.01"
-        },
-        creator_id: 'user123' // TODO: Get from World ID
-      })
-    });
+    const tokenData = {
+      name,
+      symbol: symbol.toUpperCase(),
+      total_supply: totalSupply,
+      bonding_curve_params: {
+        base_price: basePrice,
+        slope: slope,
+        protocol_fee_rate: "0.01"
+      }
+    };
     
-    const data = await response.json();
+    const success = await blazeState.createToken(tokenData);
     
-    if (data.success) {
+    if (success) {
       createResponse = { 
         success: true, 
-        token: data.token,
-        transaction_data: data.transaction_data 
+        message: "Token created successfully!"
       };
-      
-      // TODO: Use MiniKit to execute the transaction
-      console.log('Token created! Transaction data:', data.transaction_data);
       
       // Reset form
       document.getElementById('token-name').value = '';
@@ -57,7 +57,7 @@ const handleCreateToken = async () => {
       document.getElementById('base-price').value = '';
       document.getElementById('slope').value = '';
     } else {
-      createResponse = { error: data.error || "Failed to create token" };
+      createResponse = { error: "Failed to create token" };
     }
   } catch (error) {
     console.error('Error creating token:', error);
@@ -68,13 +68,29 @@ const handleCreateToken = async () => {
   }
 };
 
+const handleVerifyUser = async () => {
+  await blazeState.verifyUser();
+};
+
 export const CreateTokenBlock = () => {
+  const isVerified = blazeState.get('user.isVerified');
+  
   return `
     <div class="space-y-4">
       <!-- Header -->
       <div class="text-center">
         <h2 class="text-2xl font-black mb-2">CREATE TOKEN</h2>
         <p class="text-orange-200 text-sm">Deploy your own token</p>
+        ${!isVerified ? `
+          <div class="mt-2">
+            <button
+              onclick="handleVerifyUser()"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 text-xs border-2 border-blue-400 rounded"
+            >
+              VERIFY IDENTITY
+            </button>
+          </div>
+        ` : ''}
       </div>
 
       <!-- Form -->

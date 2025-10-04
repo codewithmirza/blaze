@@ -1,7 +1,7 @@
 // Blaze It App Configuration
 export const CONFIG = {
   // Backend API URL
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://blaze-backend-2xzvgrhww-codewithmirzas-projects.vercel.app',
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || '',
   
   // App Configuration
   APP_ID: 'app_c3673cdb0b80dceade939081853805d4',

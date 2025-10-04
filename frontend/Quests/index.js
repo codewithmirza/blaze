@@ -1,23 +1,8 @@
 // Quests Component - Dream11-style token investment competitions
-let quests = [];
+import blazeState from "../src/state.js";
+
 let selectedQuest = null;
 let portfolio = {};
-let isLoading = true;
-
-// Load quests from backend
-const loadQuests = async () => {
-  try {
-    const response = await fetch('https://blaze-backend-2xzvgrhww-codewithmirzas-projects.vercel.app/api/quests');
-    const data = await response.json();
-    if (data.success) {
-      quests = data.quests;
-    }
-  } catch (error) {
-    console.error('Error loading quests:', error);
-  } finally {
-    isLoading = false;
-  }
-};
 
 const handleQuestSelect = (quest) => {
   selectedQuest = quest;
@@ -26,28 +11,27 @@ const handleQuestSelect = (quest) => {
 };
 
 const handlePortfolioChange = (tokenId, allocation) => {
-  portfolio[tokenId] = allocation;
+  portfolio[tokenId] = {
+    amount: '1000000000000000000', // Fixed amount for demo
+    allocation_percentage: allocation
+  };
 };
 
 const handleSubmitPortfolio = async () => {
   if (!selectedQuest) return;
   
-  try {
-    const response = await fetch(`https://blaze-backend-2xzvgrhww-codewithmirzas-projects.vercel.app/api/quests/${selectedQuest.id}/submit`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: 'user123', // TODO: Get from World ID
-        portfolio: portfolio
-      })
-    });
-    
-    const data = await response.json();
-    if (data.success) {
-      alert('Portfolio submitted successfully!');
-    }
-  } catch (error) {
-    console.error('Error submitting portfolio:', error);
+  // Check if user is verified
+  if (!blazeState.get('user.isVerified')) {
+    blazeState.addNotification('Please verify your identity first', 'error');
+    return;
+  }
+  
+  const success = await blazeState.submitQuestPortfolio(selectedQuest.id, portfolio);
+  if (success) {
+    selectedQuest = null;
+    portfolio = {};
+    // Re-render the content
+    document.getElementById('content').innerHTML = QuestsBlock();
   }
 };
 
@@ -56,16 +40,32 @@ const goBackToQuests = () => {
   document.getElementById('content').innerHTML = QuestsBlock();
 };
 
+const handleVerifyUser = async () => {
+  await blazeState.verifyUser();
+};
+
 export const QuestsBlock = () => {
-  // Load quests on first render
-  if (isLoading) {
-    loadQuests();
-  }
+  const quests = blazeState.get('quests.list');
+  const isLoading = blazeState.get('quests.isLoading');
+  const error = blazeState.get('quests.error');
+  const isVerified = blazeState.get('user.isVerified');
 
   if (isLoading) {
     return `
       <div class="text-center py-8">
         <div class="text-xl font-black text-orange-300">LOADING QUESTS...</div>
+      </div>
+    `;
+  }
+
+  if (error) {
+    return `
+      <div class="text-center py-8">
+        <div class="text-2xl font-black text-red-400 mb-4">ERROR</div>
+        <div class="text-orange-200">${error}</div>
+        <button onclick="blazeState.loadQuests()" class="mt-4 bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 text-sm border-2 border-orange-400 rounded">
+          RETRY
+        </button>
       </div>
     `;
   }
@@ -78,10 +78,25 @@ export const QuestsBlock = () => {
         <div class="text-center">
           <h2 class="text-xl font-black mb-2">QUESTS</h2>
           <p class="text-orange-200 text-sm">Token investment competitions</p>
+          ${!isVerified ? `
+            <div class="mt-2">
+              <button
+                onclick="handleVerifyUser()"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 text-xs border-2 border-blue-400 rounded"
+              >
+                VERIFY IDENTITY
+              </button>
+            </div>
+          ` : ''}
         </div>
 
         <div class="space-y-3">
-          ${quests.map(quest => `
+          ${quests.length === 0 ? `
+            <div class="text-center py-8">
+              <div class="text-lg font-bold text-orange-300">NO QUESTS AVAILABLE</div>
+              <div class="text-orange-200 mt-2">Check back later for new competitions!</div>
+            </div>
+          ` : quests.map(quest => `
             <div
               onclick="handleQuestSelect(${JSON.stringify(quest).replace(/"/g, '&quot;')})"
               class="border-2 border-orange-400 p-3 cursor-pointer hover:bg-orange-900 transition-colors rounded"
@@ -103,6 +118,10 @@ export const QuestsBlock = () => {
     `;
   } else {
     // Portfolio Selection
+    const tokenSlate = typeof selectedQuest.token_slate === 'string' 
+      ? JSON.parse(selectedQuest.token_slate) 
+      : selectedQuest.token_slate;
+
     return `
       <div class="space-y-4">
         <!-- Header -->
@@ -125,10 +144,11 @@ export const QuestsBlock = () => {
 
           <div class="space-y-3">
             <h3 class="text-lg font-bold text-orange-300">Select Your Token Portfolio</h3>
+            <p class="text-xs text-orange-200">Allocate percentages for each token (total should be 100%)</p>
             
             <!-- Token Selection -->
             <div class="space-y-2">
-              ${selectedQuest.token_slate.map(tokenId => `
+              ${tokenSlate.map(tokenId => `
                 <div class="border-2 border-orange-500 p-2 rounded">
                   <div class="flex justify-between items-center">
                     <div class="text-sm font-bold">Token ${tokenId}</div>
@@ -148,6 +168,7 @@ export const QuestsBlock = () => {
             <button
               onclick="handleSubmitPortfolio()"
               class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 text-sm border-2 border-green-400 w-full rounded"
+              ${!isVerified ? 'disabled' : ''}
             >
               SUBMIT PORTFOLIO
             </button>
